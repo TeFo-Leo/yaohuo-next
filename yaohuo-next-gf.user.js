@@ -455,6 +455,11 @@ html.yh-theme-dark .yhx-paused{background:rgba(230,126,34,.14);border-color:rgba
 .yhx-emoji-empty a{color:#1abc9c;cursor:pointer;text-decoration:none;font-size:12.5px}
 .yhx-emoji-empty a:hover{text-decoration:underline}
 /* ---------- UBB 就地渲染：富文本层替换 textarea 显示（不在 #yhx-root 内，颜色写死） ---------- */
+/* 文件回帖：把 a.reply-file-link 做成与「快速回复」按钮一致的外观（点击仍走原链接） */
+html.yhx-file-reply-btn a.reply-file-link{display:inline-block;padding:5.5px 11px;margin:0;font-size:11px;line-height:16px;color:#333;background:transparent;border:1px solid #d4d4d4;border-radius:5px;text-decoration:none;box-sizing:border-box;vertical-align:middle;transition:background .15s,border-color .15s}
+html.yhx-file-reply-btn a.reply-file-link:hover{background:rgba(0,0,0,.045);border-color:#c2c2c2}
+html.yh-theme-dark.yhx-file-reply-btn a.reply-file-link{color:#d2d2d2;border-color:#4a4a4a}
+html.yh-theme-dark.yhx-file-reply-btn a.reply-file-link:hover{background:rgba(255,255,255,.06);border-color:#5c5c5c}
 .yhx-rich-wrap{position:relative}
 .yhx-rich{display:block;width:100%;min-height:110px;padding:5px 6px;box-sizing:border-box;font-family:inherit;font-size:15px;line-height:1.7;color:#333;outline:0;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;cursor:text;overflow-y:auto;letter-spacing:0}
 .yhx-rich:focus{outline:0}
@@ -5416,12 +5421,12 @@ html.yh-theme-dark .yhx-ae-reset{background:#26282c;border-color:#3f434a;color:#
   Registry.register(customUbb);
   const ubbSelWrap = {
     id: 'ubbSelWrap',
-    name: '选中文字快捷包裹',
+    name: '输入框选中文字快捷填充UBB',
     group: '浏览增强',
     order: 33,
     defaultEnabled: true,
     icon: '🎯',
-    desc: '选中输入框文字后点工具栏按钮直接包裹：链接/图片/视频等不再弹窗，加粗斜体等也稳定包裹，带参数的参数位和内容位都填选中文字。',
+    desc: '在输入框内选中文字后，再点击工具栏的按钮，自动将UBB标签填充在选中的文字前后。',
     _onClick: null,
     active() { return true; },
     WRAP: {
@@ -5482,6 +5487,22 @@ html.yh-theme-dark .yhx-ae-reset{background:#26282c;border-color:#3f434a;color:#
     status() { return '选中文字后点链接/图片等按钮直接包裹'; },
   };
   Registry.register(ubbSelWrap);
+  const fileReplyBtn = {
+    id: 'fileReplyBtn',
+    name: '文件回帖按钮样式',
+    group: '编辑器增强',
+    order: 25,
+    defaultEnabled: true,
+    icon: '📎',
+    desc: '把回帖区的「文件回帖」超链接改成和「快速回复」按钮一致的样式，点击跳转行为不变。',
+    active() { return true; },
+    init() { document.documentElement.classList.add('yhx-file-reply-btn'); },
+    destroy() { document.documentElement.classList.remove('yhx-file-reply-btn'); },
+    status() {
+      return document.querySelectorAll('a.reply-file-link').length ? '已应用按钮样式' : '当前页面无文件回帖入口';
+    },
+  };
+  Registry.register(fileReplyBtn);
   Registry.register(ubbPreview);
   Registry.register(customEmoji);
   const IN_FRAME = (() => { try { return window.top !== window.self; } catch (_) { return false; } })();
