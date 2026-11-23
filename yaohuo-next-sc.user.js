@@ -123,6 +123,7 @@
     check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5l5 5 10-11"/></svg>',
     eye: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.2 12S5.8 5.4 12 5.4 21.8 12 21.8 12 18.2 18.6 12 18.6 2.2 12 2.2 12z"/><circle cx="12" cy="12" r="2.9"/></svg>',
     pen: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17v3z"/><path d="M13.5 6.5l3 3"/></svg>',
+    play: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M10.5 9.5v5l4-2.5z"/></svg>',
     chevron: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>',
     read: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="15" rx="2.5"/><path d="M7 9h10M7 12.5h10M7 16h6"/></svg>',
     arrowUp: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V6M6 12l6-6 6 6"/></svg>',
@@ -2270,12 +2271,16 @@ html.yh-theme-dark .yhx-ae-reset{background:#26282c;border-color:#3f434a;color:#
         const src = this.safeUrl((parts[0] || '').trim());
         if (!src) return null;
         const poster = this.safeUrl((parts[1] || '').trim());
-        const box = h('span', { class: 'yhx-rich-item yhx-rich-movie', contenteditable: 'false' });
+        const box = h('span', {
+          class: 'yhx-rich-item yhx-rich-movie', 'data-type': 'movie', 'data-ubb': raw,
+          'data-len': String(raw.length), contenteditable: 'false',
+        });
         const video = h('video', Object.assign({
           src: src, controls: 'controls', preload: 'metadata',
           'data-ubb': raw,
         }, poster ? { poster: poster } : {}));
         box.appendChild(video);
+        box.appendChild(this.editBtn({ raw: raw, type: 'movie', href: src, poster: poster }));
         return box;
       }
       if (kind === 'img') {
@@ -2448,28 +2453,36 @@ html.yh-theme-dark .yhx-ae-reset{background:#26282c;border-color:#3f434a;color:#
       const self = this;
       this._editing = true;
       const isImg = data.type === 'img';
+      const isMovie = data.type === 'movie';
       const raw = data.raw;
       const urlInput = h('input', {
         type: 'url', class: 'yhx-editinput', spellcheck: 'false', autocomplete: 'off',
-        placeholder: isImg ? 'https://… 图片地址' : 'https://… 链接地址',
+        placeholder: isMovie ? 'https://… 视频地址' : (isImg ? 'https://… 图片地址' : 'https://… 链接地址'),
       });
       urlInput.value = data.href || '';
       const labelInput = h('input', {
         type: 'text', class: 'yhx-editinput', spellcheck: 'false',
         placeholder: '显示的文字，留空则直接显示地址', maxlength: '200',
       });
-      if (!isImg) labelInput.value = (data.label && data.label !== data.href) ? data.label : '';
+      if (!isImg && !isMovie) labelInput.value = (data.label && data.label !== data.href) ? data.label : '';
+      const posterInput = h('input', {
+        type: 'url', class: 'yhx-editinput', spellcheck: 'false', autocomplete: 'off',
+        placeholder: 'https://… 封面图地址，可留空',
+      });
+      if (isMovie) posterInput.value = data.poster || '';
       const previewImg = h('img', { alt: '预览', referrerpolicy: 'no-referrer' });
       const preview = h('div', { class: 'yhx-editprev', hidden: 'hidden' }, previewImg);
       previewImg.addEventListener('error', () => { preview.hidden = true; });
+      const previewOf = () => (isMovie ? (self.safeUrl(posterInput.value) || '') : (self.safeUrl(urlInput.value) || ''));
       const syncPreview = () => {
-        const url = self.safeUrl(urlInput.value);
+        const url = previewOf();
         if (!url) { preview.hidden = true; return; }
         previewImg.src = url;
         preview.hidden = false;
       };
-      if (isImg) {
+      if (isImg || isMovie) {
         urlInput.addEventListener('input', debounce(syncPreview, 260));
+        if (isMovie) posterInput.addEventListener('input', debounce(syncPreview, 260));
         syncPreview();
       }
       const onKey = (e) => {
@@ -2489,9 +2502,12 @@ html.yh-theme-dark .yhx-ae-reset{background:#26282c;border-color:#3f434a;color:#
           urlInput.focus();
           return;
         }
+        const poster = isMovie ? (self.safeUrl(posterInput.value) || '') : '';
         let next;
         if (isImg) {
           next = '[img]' + url + '[/img]';
+        } else if (isMovie) {
+          next = '[movie]' + url + (poster ? '|' + poster : '') + '[/movie]';
         } else {
           const label = labelInput.value.trim();
           next = label ? ('[url=' + url + ']' + label + '[/url]') : ('[url]' + url + '[/url]');
@@ -2520,14 +2536,15 @@ html.yh-theme-dark .yhx-ae-reset{background:#26282c;border-color:#3f434a;color:#
         h('div', { class: 'yhx-hd' },
           h('div', {
             class: 'yhx-hd-title',
-            html: (isImg ? ICON.smile : ICON.link) + '<span>' + (isImg ? '编辑图片' : '编辑超链接') + '</span>',
+            html: (isImg ? ICON.smile : (isMovie ? ICON.play : ICON.link)) + '<span>' + (isImg ? '编辑图片' : (isMovie ? '编辑视频' : '编辑超链接')) + '</span>',
           }),
           h('div', { class: 'yhx-grow' }),
           h('button', { class: 'yhx-iconbtn', type: 'button', 'aria-label': '关闭', html: ICON.close, onclick: () => close() }),
         ),
         h('div', { class: 'yhx-editbody' },
-          field(isImg ? '图片地址' : '链接地址', urlInput),
-          isImg ? preview : field('显示文字', labelInput),
+          field(isMovie ? '视频地址' : (isImg ? '图片地址' : '链接地址'), urlInput),
+          isMovie ? field('封面图（可留空）', posterInput) : (isImg ? preview : field('显示文字', labelInput)),
+          isMovie ? preview : null,
         ),
         h('div', { class: 'yhx-editft' },
           h('button', { class: 'yhx-btn', type: 'button', text: '取消', onclick: () => close() }),
@@ -2536,7 +2553,7 @@ html.yh-theme-dark .yhx-ae-reset{background:#26282c;border-color:#3f434a;color:#
       );
       const mask = h('div', { class: 'yhx-mask', hidden: 'hidden' }, sheet);
       mask.addEventListener('click', (e) => { if (e.target === mask) close(); });
-      [urlInput, labelInput].forEach((inp) => {
+      [urlInput, labelInput, posterInput].forEach((inp) => {
         inp.addEventListener('keydown', (e) => {
           if (e.key === 'Enter') { e.preventDefault(); commit(); }
         });
