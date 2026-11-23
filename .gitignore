@@ -1,0 +1,4 @@
+# 源码（带注释）与构建中间产物不入库，仓库只放两个发行版
+yaohuo-next.user.js
+yaohuo-next.min.user.js
+.build.*.js
