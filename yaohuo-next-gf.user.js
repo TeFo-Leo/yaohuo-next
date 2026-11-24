@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         妖火 · Next
 // @namespace    https://yaohuo.me/
-// @version      3.0.1
+// @version      3.0.2
 // @description  妖火论坛可扩展增强脚本：帖子悬浮预览、用户名片、一键收藏表情、自动吃肉、首页搜索类型选择、跳过外站跳转提示、关键词屏蔽、回复复读机、打赏自定义金额、自定义表情、UBB实时渲染、自动吃肉、跳过外链提示、关键词屏蔽帖子等。
 // @author       yaohuo@39874
 // @match        *://yaohuo.me/*
@@ -22,7 +22,7 @@
   if (window.__yhxLoaded) return;
   window.__yhxLoaded = true;
   const W = (typeof unsafeWindow !== 'undefined' && unsafeWindow) ? unsafeWindow : window;
-  const VERSION = '3.0.1';
+  const VERSION = '3.0.2';
   const NS = 'yhx';
   const Store = {
     prefix: 'yhx:v1:',
@@ -4714,7 +4714,7 @@ html.yh-theme-dark .yhx-ae-reset{background:#26282c;border-color:#3f434a;color:#
     markEaten(pid, today) {
       const d = this.dates();
       d[pid] = today;
-      const cutoff = Date.now() - 45 * 864e5;
+      const cutoff = Date.now() - 2 * 864e5;
       Object.keys(d).forEach((k) => {
         const t = Date.parse(d[k]);
         if (!isNaN(t) && t < cutoff) delete d[k];
