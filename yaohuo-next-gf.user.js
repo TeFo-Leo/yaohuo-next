@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         妖火 · Next
 // @namespace    https://yaohuo.me/
-// @version      2.24
+// @version      3.0.1
 // @description  妖火论坛可扩展增强脚本：帖子悬浮预览、用户名片、一键收藏表情、自动吃肉、首页搜索类型选择、跳过外站跳转提示、关键词屏蔽、回复复读机、打赏自定义金额、自定义表情、UBB实时渲染、自动吃肉、跳过外链提示、关键词屏蔽帖子等。
 // @author       yaohuo@39874
 // @match        *://yaohuo.me/*
@@ -22,7 +22,7 @@
   if (window.__yhxLoaded) return;
   window.__yhxLoaded = true;
   const W = (typeof unsafeWindow !== 'undefined' && unsafeWindow) ? unsafeWindow : window;
-  const VERSION = '2.24';
+  const VERSION = '3.0.1';
   const NS = 'yhx';
   const Store = {
     prefix: 'yhx:v1:',
@@ -126,6 +126,12 @@
     eye: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.2 12S5.8 5.4 12 5.4 21.8 12 21.8 12 18.2 18.6 12 18.6 2.2 12 2.2 12z"/><circle cx="12" cy="12" r="2.9"/></svg>',
     pen: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17v3z"/><path d="M13.5 6.5l3 3"/></svg>',
     play: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M10.5 9.5v5l4-2.5z"/></svg>',
+    scrollUpDown: '<svg viewBox="0 0 1024 1024"><path d="M512 341.333333H341.376L341.333333 853.333333H256V341.333333H85.333333l213.333334-213.333333 213.333333 213.333333z m426.666667 341.333334l-213.333334 213.333333-213.333333-213.333333h170.666667V170.666667h85.333333v512h170.666667z" fill="currentColor"></path></svg>',
+    eat: '<svg viewBox="0 0 1024 1024"><path d="M960 179.712c0-36.352-32.256-68.608-91.136-90.624-51.712-19.456-120.32-30.208-192.512-30.208-72.192 0-140.8 10.752-192.512 30.208C424.448 111.104 392.192 143.36 392.192 179.712V353.28c-22.528-2.048-46.08-3.584-70.144-3.584-72.192 0-140.8 10.752-192.512 30.208C70.656 402.432 38.4 434.688 38.4 471.04V844.288c0 36.352 32.256 68.608 91.136 90.624 51.712 19.456 120.32 30.208 192.512 30.208 72.192 0 140.8-10.752 192.512-30.208 51.2-19.456 82.432-46.08 89.6-76.8 23.552 2.56 47.616 3.584 71.68 3.584 72.192 0 140.8-10.752 192.512-30.208 58.88-22.016 91.136-54.272 91.136-90.624v-1.536-1.536l0.512-558.08z m-45.568 422.4c0 31.232-93.184 75.776-238.592 75.776-24.064 0-47.616-1.024-70.144-3.584v-93.184c23.04 2.56 46.08 3.584 70.144 3.584 72.192 0 140.8-10.752 192.512-30.208 17.92-6.656 33.28-14.336 46.08-22.528v70.144z m-353.792-1.024c0 31.232-93.184 75.776-238.592 75.776-145.408 0-238.592-45.056-238.592-75.776v-61.952c12.8 8.192 28.16 15.872 46.08 22.528 51.712 19.456 120.32 30.208 192.512 30.208 72.192 0 140.8-10.752 192.512-30.208 17.92-6.656 33.28-14.336 46.08-22.528v61.952z m-477.184 68.096c12.8 8.192 28.16 15.872 46.08 22.528 51.712 19.456 120.32 30.208 192.512 30.208 72.192 0 140.8-10.752 192.512-30.208 17.92-6.656 33.28-14.336 46.08-22.528v53.76c0 31.232-93.184 75.776-238.592 75.776-145.408 0-238.592-45.056-238.592-75.776v-53.76z m830.976-205.312c0 31.232-93.184 75.776-238.592 75.776-24.064 0-47.616-1.024-70.144-3.584V471.04c0-9.728-2.56-19.456-7.168-28.672 25.088 2.56 50.688 4.096 77.312 4.096 72.192 0 140.8-10.752 192.512-30.208 17.92-6.656 33.28-14.336 46.08-22.528v70.144z m0-138.752c0 31.232-93.184 75.776-238.592 75.776-145.408 0-238.592-45.056-238.592-75.776V247.808c12.8 8.192 28.16 15.872 46.08 22.528 51.712 19.456 120.32 30.208 192.512 30.208s140.8-10.752 192.512-30.208c17.92-6.656 33.28-14.336 46.08-22.528v77.312zM675.84 103.424c145.408 0 238.592 45.056 238.592 75.776S821.76 255.488 675.84 255.488c-145.408 0-238.592-45.056-238.592-75.776s93.184-76.288 238.592-76.288zM322.048 394.752c32.256 0 61.44 2.048 88.064 6.144 1.024 0 1.536 0.512 2.56 0.512 92.16 13.312 147.968 45.568 147.968 69.632 0 31.232-93.184 75.776-238.592 75.776-145.408 0-238.592-45.056-238.592-75.776s92.672-76.288 238.592-76.288z m0 525.824c-145.408 0-238.592-45.056-238.592-75.776v-1.536V791.04c12.8 8.192 28.16 15.872 46.08 22.528 51.712 19.456 120.32 30.208 192.512 30.208 72.192 0 140.8-10.752 192.512-30.208 17.92-6.656 33.28-14.336 46.08-22.528V844.8c0 30.72-93.184 75.776-238.592 75.776z m353.792-103.936c-24.064 0-47.616-1.024-70.144-3.584v-93.184c23.04 2.56 46.08 3.584 70.144 3.584 72.192 0 140.8-10.752 192.512-30.208 17.92-6.656 33.28-14.336 46.08-22.528v70.656c0 30.208-92.672 75.264-238.592 75.264z" fill="currentColor"></path></svg>',
+    loadMore: '<svg viewBox="0 0 1024 1024"><path d="M121.00300001 512.873c13.001 0 26.314 4.437 36.93799999 13.722l353.413 303.264 353.412-303.264c23.523-20.223 59.126-17.847 79.557 5.574 20.42800001 23.319 17.95099999 58.61-5.675 78.72900001l-390.249 335.04699999c-21.26 18.262-52.834 18.262-74.091 0l-390.248-335.048c-23.63-20.119-26.209-55.41-5.773-78.729 11.142-12.795 26.932-19.29400001 42.717-19.293v0zM121.00300001 512.873z" fill="currentColor"></path><path d="M121.00300001 66.078c13.001 0 26.313 4.438 36.93799999 13.72399999l353.413 303.26800001 353.412-303.27c23.523-20.227 59.126-17.847 79.557 5.574 20.428 23.314 17.951 58.608-5.675 78.72900001l-390.25 335.04799999c-21.255 18.262-52.834 18.262-74.091 0l-390.248-335.048c-23.63-20.12-26.206-55.414-5.77300001-78.729 11.142-12.795 26.932-19.295 42.71700001-19.295v0zM121.00300001 66.078z" fill="currentColor"></path></svg>',
+    newReplies: '<svg viewBox="0 0 1080 1024"><path d="M750.933333 113.777778C659.911111 62.577778 551.822222 39.822222 455.111111 56.888889c-22.755556 5.688889-39.822222 22.755556-28.444444 45.511111 5.688889 17.066667 22.755556 28.444444 39.822222 28.444444 85.333333-11.377778 170.666667 5.688889 250.311111 51.2 182.044444 102.4 250.311111 329.955556 164.977778 512-5.688889 17.066667-17.066667 28.444444-17.066667 28.444445l-79.644444-45.511111-17.066667 256c5.688889 5.688889 244.622222-119.466667 244.622222-119.466667l-79.644444-45.511111 17.066666-34.133333c96.711111-227.555556 11.377778-494.933333-199.111111-620.088889zM312.888889 870.4C119.466667 762.311111 56.888889 517.688889 164.977778 324.266667l85.333333 45.511111 17.066667-250.311111L22.755556 238.933333l79.644444 45.511111c-130.844444 233.244444-39.822222 523.377778 170.666667 648.533334 96.711111 56.888889 204.8 73.955556 307.2 56.888889 22.755556-5.688889 34.133333-22.755556 28.444444-45.511111-5.688889-17.066667-22.755556-28.444444-39.822222-28.444445-85.333333 17.066667-176.355556 0-256-45.511111z" fill="currentColor"></path></svg>',
+    selWrap: '<svg viewBox="0 0 1114 1024"><path d="M363.613577 943.791123H181.806789V101.597911h181.806788v61.493473H259.342037v721.879895h104.27154v58.819844zM751.289817 884.971279H855.561358v-721.879895h-104.271541V101.597911h181.806789v844.866841h-181.806789v-61.493473z" fill="currentColor"></path></svg>',
+    fileReply: '<svg viewBox="0 0 1024 1024"><path d="M516.373333 375.978667l136.576-136.576a147.797333 147.797333 0 0 1 208.853334-0.021334 147.690667 147.690667 0 0 1-0.042667 208.832l-204.8 204.778667v0.021333l-153.621333 153.6c-85.973333 85.973333-225.28 85.973333-311.253334 0.021334-85.994667-85.973333-85.973333-225.216 0.149334-311.36L431.146667 256.362667a21.333333 21.333333 0 0 0-30.165334-30.165334L162.069333 465.066667c-102.805333 102.826667-102.826667 269.056-0.149333 371.733333 102.613333 102.613333 268.970667 102.613333 371.584 0l153.6-153.642667h0.021333l0.021334-0.021333 204.778666-204.778667c74.325333-74.325333 74.346667-194.858667 0.021334-269.184-74.24-74.24-194.88-74.24-269.162667 0.042667l-136.576 136.554667-187.626667 187.626666a117.845333 117.845333 0 0 0-0.106666 166.826667 118.037333 118.037333 0 0 0 166.826666-0.106667l255.850667-255.829333a21.333333 21.333333 0 0 0-30.165333-30.165333L435.136 669.973333a75.370667 75.370667 0 0 1-106.496 0.106667 75.178667 75.178667 0 0 1 0.128-106.496l187.605333-187.605333z" fill="currentColor"></path></svg>',
     chevron: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>',
     read: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="15" rx="2.5"/><path d="M7 9h10M7 12.5h10M7 16h6"/></svg>',
     arrowUp: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V6M6 12l6-6 6 6"/></svg>',
@@ -316,7 +322,13 @@ html.yh-theme-dark #yhx-root{
 /* ---------- 回复复读机的「+1」 ---------- */
 /* 站点有 .subtitle2 a{padding:0 5px 0 2px} 这类规则，特异性比单个类高，
    所以这里用 a.yhx-plus，并把尺寸相关的属性写死 !important，避免被站点挤变形 */
-a.yhx-plus{display:inline-flex!important;align-items:center;justify-content:center;flex:none;margin-left:8px!important;width:22px!important;height:22px!important;min-width:0!important;padding:0!important;border:1px solid rgba(26,188,156,.5);border-radius:50%;background:rgba(26,188,156,.1);color:#12a58a!important;font-size:10.5px!important;font-weight:700;line-height:1!important;letter-spacing:0;font-variant-numeric:tabular-nums;text-decoration:none!important;cursor:pointer;vertical-align:middle;white-space:nowrap;user-select:none;-webkit-user-select:none;box-shadow:0 1px 3px rgba(26,188,156,.16);transition:background-color .16s,color .16s,border-color .16s,box-shadow .16s,transform .12s cubic-bezier(.22,.61,.36,1);touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+a.yhx-plus{display:inline-flex!important;align-items:center;justify-content:center;flex:none;position:relative;z-index:3;margin:0 0 0 8px!important;width:22px!important;height:22px!important;min-width:0!important;padding:0!important;border:1px solid rgba(26,188,156,.5);border-radius:50%;background:rgba(26,188,156,.1);color:#12a58a!important;font-size:10.5px!important;font-weight:700;line-height:1!important;letter-spacing:0;font-variant-numeric:tabular-nums;text-decoration:none!important;cursor:pointer;vertical-align:middle;white-space:nowrap;user-select:none;-webkit-user-select:none;box-shadow:0 1px 3px rgba(26,188,156,.16);transition:background-color .16s,color .16s,border-color .16s,box-shadow .16s,transform .12s cubic-bezier(.22,.61,.36,1);touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+/* 楼层右下角的回复按钮（气泡图标）与 +1 圆钮垂直居中对齐：图标在按钮内居中，
+ * 两者在同一操作行里都居中，视觉上成为一条中线 */
+.operate a.replyicon{display:flex;align-items:center;align-self:center;margin-top:0!important}
+.operate a.replyicon img{transform:translateY(-1.2px)}
+/* 带 +1 的操作行留足高度：桌面 22px 按钮、移动端 28px，行高不够时按钮底部会压在楼层的分割线下面 */
+.yhx-plus-host{position:relative;z-index:3;min-height:24px;margin-bottom:0!important;transform:none!important}
 a.yhx-plus:hover,a.yhx-plus:focus-visible{background:#1abc9c;border-color:#1abc9c;color:#fff!important;box-shadow:0 3px 10px rgba(26,188,156,.34);transform:translateY(-1px);outline:0}
 a.yhx-plus:active{transform:translateY(0) scale(.95);box-shadow:0 1px 2px rgba(26,188,156,.2)}
 html.yh-theme-dark a.yhx-plus{background:rgba(72,213,184,.13);border-color:rgba(72,213,184,.36);color:#48d5b8!important;box-shadow:none}
@@ -455,11 +467,17 @@ html.yh-theme-dark .yhx-paused{background:rgba(230,126,34,.14);border-color:rgba
 .yhx-emoji-empty a{color:#1abc9c;cursor:pointer;text-decoration:none;font-size:12.5px}
 .yhx-emoji-empty a:hover{text-decoration:underline}
 /* ---------- UBB 就地渲染：富文本层替换 textarea 显示（不在 #yhx-root 内，颜色写死） ---------- */
-/* 文件回帖：把 a.reply-file-link 做成与「快速回复」按钮一致的外观（点击仍走原链接） */
-html.yhx-file-reply-btn a.reply-file-link{display:inline-block;padding:5.5px 11px;margin:0;font-size:11px;line-height:16px;color:#333;background:transparent;border:1px solid #d4d4d4;border-radius:5px;text-decoration:none;box-sizing:border-box;vertical-align:middle;transition:background .15s,border-color .15s}
-html.yhx-file-reply-btn a.reply-file-link:hover{background:rgba(0,0,0,.045);border-color:#c2c2c2}
-html.yh-theme-dark.yhx-file-reply-btn a.reply-file-link{color:#d2d2d2;border-color:#4a4a4a}
-html.yh-theme-dark.yhx-file-reply-btn a.reply-file-link:hover{background:rgba(255,255,255,.06);border-color:#5c5c5c}
+/* 文件回帖：把 a.reply-file-link 做成与「快速回复」按钮一致的外观（点击仍走原链接）。
+ * 取值照抄 input.btn.reply-submit-btn 的计算样式：浅灰渐变底、sans-serif 11px、
+ * 左右 5px 外边距、文字居中——深浅主题都是这套浅色按钮（站点按钮不随主题变暗） */
+html.yhx-file-reply-btn a.reply-file-link{display:inline-block;margin:0 5px;padding:5.5px 11px;font-family:sans-serif;font-size:11px;line-height:normal;text-align:center;color:#333;background-image:linear-gradient(#f4f4f4,#ececec);border:1px solid #d4d4d4;border-radius:5px;text-decoration:none;box-sizing:border-box;vertical-align:middle;position:relative;user-select:text}
+/* 站点原有 #replyActions.has-sort .reply-file-link{top:1px}（纯链接时代的下移补偿），
+ * 变成按钮后要清零——用更高特异性覆盖 */
+html.yhx-file-reply-btn #replyActions.has-sort a.reply-file-link{top:0}
+/* 焦点/悬停与快速回复按钮保持一致：站点按钮没有 hover/focus 变色，
+ * 也没有 browser 默认焦点环（深色 outline），这里一并去掉；
+ */
+html.yhx-file-reply-btn a.reply-file-link:hover,html.yhx-file-reply-btn a.reply-file-link:focus{background-image:linear-gradient(#599bdc,#3072b3);border-color:#3072b3;color:#fff;outline:0}
 .yhx-rich-wrap{position:relative}
 .yhx-rich{display:block;width:100%;min-height:110px;padding:5px 6px;box-sizing:border-box;font-family:inherit;font-size:15px;line-height:1.7;color:#333;outline:0;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;cursor:text;overflow-y:auto;letter-spacing:0}
 .yhx-rich:focus{outline:0}
@@ -818,7 +836,10 @@ html.yh-theme-dark .yhx-ae-reset{background:#26282c;border-color:#3f434a;color:#
   .yhx-glass{width:40px;height:40px}
   .yhx-glass svg{width:18px;height:18px}
   /* 手指点得住的最小尺寸 */
-  a.yhx-plus{width:28px!important;height:28px!important;font-size:11.5px!important;margin-left:10px!important}
+  /* 站点给操作行加了 margin-bottom:-6px + translateY(3px)（纯文字链接时代的贴底补偿），
+   * 加上 +1 按钮后整行会溢出楼层边框——清掉，行回到楼层内；按钮 24px 居中不压回复文字 */
+  .yhx-plus-host{min-height:30px}
+  a.yhx-plus{width:24px!important;height:24px!important;font-size:11px!important;margin:0 0 0 10px!important;align-self:center}
   /* 打赏自定义行：加高到 36px，字号 16px 防 iOS 聚焦缩放 */
   /* 打赏自定义格子：格子本身已是站点尺寸，只需让输入框字号够大防 iOS 缩放 */
   .yhx-rw-custom .yhx-rw-input{font-size:16px}
@@ -2114,6 +2135,7 @@ html.yh-theme-dark .yhx-ae-reset{background:#26282c;border-color:#3f434a;color:#
     options: [
       { key: 'image', name: '图片 UBB', hint: '[img]…[/img]', default: true },
       { key: 'link', name: '超链接 UBB', hint: '[url=地址]文字[/url]', default: true },
+      { key: 'movie', name: '视频 UBB', hint: '[movie]地址|封面[/movie]', default: true },
     ],
     _inst: new Map(),
     _observer: null,
@@ -2199,7 +2221,12 @@ html.yh-theme-dark .yhx-ae-reset{background:#26282c;border-color:#3f434a;color:#
       };
       inst.onCaret = () => self.pushCaret(inst, ta);
       inst.onKeydown = (e) => {
-        if (e.key !== 'Enter' || e.isComposing) return;
+        if (e.isComposing) return;
+        if (e.key === 'Backspace' || e.key === 'Delete') {
+          if (self.deleteAtom(inst, e.key === 'Backspace')) e.preventDefault();
+          return;
+        }
+        if (e.key !== 'Enter') return;
         e.preventDefault();
         const sel = window.getSelection();
         if (!sel || !sel.rangeCount) return;
@@ -2273,7 +2300,9 @@ html.yh-theme-dark .yhx-ae-reset{background:#26282c;border-color:#3f434a;color:#
     buildNode(kind, attr, inner, raw) {
       const wantImg = Config.opt(this.id, 'image', true);
       const wantLink = Config.opt(this.id, 'link', true);
+      const wantMovie = Config.opt(this.id, 'movie', true);
       if (kind === 'movie') {
+        if (!wantMovie) return null;
         const parts = inner.split('|');
         const src = this.safeUrl((parts[0] || '').trim());
         if (!src) return null;
@@ -2433,6 +2462,71 @@ html.yh-theme-dark .yhx-ae-reset{background:#26282c;border-color:#3f434a;color:#
         start: offsetOf(range.startContainer, range.startOffset),
         end: offsetOf(range.endContainer, range.endOffset),
       };
+    },
+    deleteAtom(inst, backward) {
+      const sel = window.getSelection();
+      if (!sel || !sel.rangeCount) return false;
+      const range = sel.getRangeAt(0);
+      if (!range.collapsed) return false;
+      const rich = inst.rich;
+      if (!rich.contains(range.startContainer)) return false;
+      const el = backward ? this.atomPrev(rich, range) : this.atomNext(rich, range);
+      if (!el) return false;
+      const parent = el.parentNode;
+      const next = el.nextSibling;
+      el.remove();
+      const r = document.createRange();
+      if (next && next.parentNode) r.setStart(next, 0);
+      else if (parent) r.setStart(parent, parent.childNodes.length);
+      r.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(r);
+      if (inst.onInput) inst.onInput();
+      return true;
+    },
+    atomPrev(rich, range) {
+      const isAtom = (n) => !!(n && n.nodeType === 1 && n.classList && n.classList.contains('yhx-rich-item'));
+      const blank = (n) => n.nodeType === 3 && !String(n.nodeValue || '').replace(/\u200b/g, '');
+      const c = range.startContainer, o = range.startOffset;
+      if (c.nodeType === 3 && o > 0) return null;
+      if (c.nodeType === 1) {
+        let i = o - 1;
+        while (i >= 0) {
+          const n = c.childNodes[i];
+          if (blank(n)) { i--; continue; }
+          return isAtom(n) ? n : null;
+        }
+      }
+      let p = c;
+      while (p && p !== rich) {
+        let sib = p.previousSibling;
+        while (sib && blank(sib)) sib = sib.previousSibling;
+        if (sib) return isAtom(sib) ? sib : null;
+        p = p.parentNode;
+      }
+      return null;
+    },
+    atomNext(rich, range) {
+      const isAtom = (n) => !!(n && n.nodeType === 1 && n.classList && n.classList.contains('yhx-rich-item'));
+      const blank = (n) => n.nodeType === 3 && !String(n.nodeValue || '').replace(/\u200b/g, '');
+      const c = range.startContainer, o = range.startOffset;
+      if (c.nodeType === 3 && o < c.nodeValue.length) return null;
+      if (c.nodeType === 1) {
+        let i = o;
+        while (i < c.childNodes.length) {
+          const n = c.childNodes[i];
+          if (blank(n)) { i++; continue; }
+          return isAtom(n) ? n : null;
+        }
+      }
+      let p = c;
+      while (p && p !== rich) {
+        let sib = p.nextSibling;
+        while (sib && blank(sib)) sib = sib.nextSibling;
+        if (sib) return isAtom(sib) ? sib : null;
+        p = p.parentNode;
+      }
+      return null;
     },
     pushSelection(inst, ta) {
       const r = this.readRange(inst);
@@ -3517,7 +3611,7 @@ html.yh-theme-dark .yhx-ae-reset{background:#26282c;border-color:#3f434a;color:#
       if (!img.complete || !img.naturalWidth) return false;
       const src = img.currentSrc || img.src || '';
       if (!/^https?:/i.test(src) && !/^\/\//.test(src)) return false;
-      if (img.closest('#yhx-root, .yhx-uc, .yhx-rich-wrap, .ubb-pop, [class*="emoji-panel"], .uinfo-avatar, .uinfo-avatar-container')) return false;
+      if (img.closest('#yhx-root, .yhx-uc, .yhx-tp, .yhx-rich-wrap, .ubb-pop, [class*="emoji-panel"], .uinfo-avatar, .uinfo-avatar-container')) return false;
       if (/avatar/i.test(String(img.getAttribute('class') || ''))) return false;
       const imgPath = (() => {
         try { return new URL(img.currentSrc || img.src, location.href).pathname; } catch (_) { return ''; }
@@ -4117,6 +4211,7 @@ html.yh-theme-dark .yhx-ae-reset{background:#26282c;border-color:#3f434a;color:#
           onkeydown: (e) => { if (e.key === 'Enter') { e.preventDefault(); this.repeat(post); } },
         });
         host.appendChild(btn);
+        host.classList.add('yhx-plus-host');
       });
     },
     watch() {
@@ -4181,7 +4276,7 @@ html.yh-theme-dark .yhx-ae-reset{background:#26282c;border-color:#3f434a;color:#
     group: '浏览增强',
     order: 30,
     defaultEnabled: false,
-    icon: ICON.arrowUp,
+    icon: ICON.scrollUpDown,
     desc: '悬浮按钮组里的两个小圆钮，一键回到顶部或跳到底部，滚到位后自动隐去。',
     _top: null,
     _bottom: null,
@@ -4573,7 +4668,7 @@ html.yh-theme-dark .yhx-ae-reset{background:#26282c;border-color:#3f434a;color:#
     group: '浏览增强',
     order: 55,
     defaultEnabled: false,
-    icon: '🥩',
+    icon: ICON.eat,
     desc: '打开帖子自动吃肉：当日每帖一次，自动填入吃肉词并提交；吃肉词可自定义增删，上次用过的词下次不会重复。',
     PRESET_WORDS: [
       '吃', '肉', '吃吃', '吃吃吃', '肉肉',
@@ -4648,7 +4743,8 @@ html.yh-theme-dark .yhx-ae-reset{background:#26282c;border-color:#3f434a;color:#
       if (!this.isTopic()) return;
       const pid = (location.pathname.match(/\/bbs-(\d+)/) || [])[1];
       if (!pid) return;
-      const today = new Date().toISOString().slice(0, 10);
+      const now = new Date();
+      const today = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
       const dates = this.dates();
       if (dates[pid] === today) return;
       const uid = this.myUid();
@@ -4759,7 +4855,7 @@ html.yh-theme-dark .yhx-ae-reset{background:#26282c;border-color:#3f434a;color:#
     group: '浏览增强',
     order: 70,
     defaultEnabled: false,
-    icon: '⏬',
+    icon: ICON.loadMore,
     desc: '帖子列表页、用户帖子列表页滚动到底时自动加载下一页帖子（默认关）。',
     _onScroll: null,
     _loaded: 0,
@@ -4823,7 +4919,7 @@ html.yh-theme-dark .yhx-ae-reset{background:#26282c;border-color:#3f434a;color:#
     group: '浏览增强',
     order: 71,
     defaultEnabled: false,
-    icon: '⏬',
+    icon: ICON.loadMore,
     desc: '回帖列表页和帖子详情页滚动到底时自动加载下一页回复（默认关）。',
     _onScroll: null,
     _loaded: 0,
@@ -4931,7 +5027,7 @@ html.yh-theme-dark .yhx-ae-reset{background:#26282c;border-color:#3f434a;color:#
     group: '浏览增强',
     order: 72,
     defaultEnabled: false,
-    icon: '🔔',
+    icon: ICON.newReplies,
     desc: '浏览帖子时有人新回复自动加载，5 秒内响应（站点原生提示条出现时也会自动展开）。',
     _timer: 0,
     _lastNum: null,
@@ -5425,7 +5521,7 @@ html.yh-theme-dark .yhx-ae-reset{background:#26282c;border-color:#3f434a;color:#
     group: '浏览增强',
     order: 33,
     defaultEnabled: true,
-    icon: '🎯',
+    icon: ICON.selWrap,
     desc: '在输入框内选中文字后，再点击工具栏的按钮，自动将UBB标签填充在选中的文字前后。',
     _onClick: null,
     active() { return true; },
@@ -5492,8 +5588,8 @@ html.yh-theme-dark .yhx-ae-reset{background:#26282c;border-color:#3f434a;color:#
     name: '文件回帖按钮样式',
     group: '编辑器增强',
     order: 25,
-    defaultEnabled: true,
-    icon: '📎',
+    defaultEnabled: false,
+    icon: ICON.fileReply,
     desc: '把回帖区的「文件回帖」超链接改成和「快速回复」按钮一致的样式，点击跳转行为不变。',
     active() { return true; },
     init() { document.documentElement.classList.add('yhx-file-reply-btn'); },
