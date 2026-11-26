@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         妖火 · Next
 // @namespace    https://yaohuo.me/
-// @version      3.0.2
+// @version      3.1.0
 // @description  妖火论坛可扩展增强脚本：帖子悬浮预览、用户名片、一键收藏表情、自动吃肉、首页搜索类型选择、跳过外站跳转提示、关键词屏蔽、回复复读机、打赏自定义金额、自定义表情、UBB实时渲染、自动吃肉、跳过外链提示、关键词屏蔽帖子等。
 // @author       yaohuo@39874
 // @match        *://yaohuo.me/*
@@ -10,6 +10,7 @@
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @grant        GM_deleteValue
+// @grant        GM_xmlhttpRequest
 // @grant        unsafeWindow
 // @homepageURL   https://scriptcat.org/zh-CN/script-show-page/9155
 // @supportURL   https://scriptcat.org/zh-CN/script-show-page/9155
@@ -20,7 +21,7 @@
   if (window.__yhxLoaded) return;
   window.__yhxLoaded = true;
   const W = (typeof unsafeWindow !== 'undefined' && unsafeWindow) ? unsafeWindow : window;
-  const VERSION = '3.0.2';
+  const VERSION = '3.1.0';
   const NS = 'yhx';
   const Store = {
     prefix: 'yhx:v1:',
@@ -128,6 +129,8 @@
     eat: '<svg viewBox="0 0 1024 1024"><path d="M960 179.712c0-36.352-32.256-68.608-91.136-90.624-51.712-19.456-120.32-30.208-192.512-30.208-72.192 0-140.8 10.752-192.512 30.208C424.448 111.104 392.192 143.36 392.192 179.712V353.28c-22.528-2.048-46.08-3.584-70.144-3.584-72.192 0-140.8 10.752-192.512 30.208C70.656 402.432 38.4 434.688 38.4 471.04V844.288c0 36.352 32.256 68.608 91.136 90.624 51.712 19.456 120.32 30.208 192.512 30.208 72.192 0 140.8-10.752 192.512-30.208 51.2-19.456 82.432-46.08 89.6-76.8 23.552 2.56 47.616 3.584 71.68 3.584 72.192 0 140.8-10.752 192.512-30.208 58.88-22.016 91.136-54.272 91.136-90.624v-1.536-1.536l0.512-558.08z m-45.568 422.4c0 31.232-93.184 75.776-238.592 75.776-24.064 0-47.616-1.024-70.144-3.584v-93.184c23.04 2.56 46.08 3.584 70.144 3.584 72.192 0 140.8-10.752 192.512-30.208 17.92-6.656 33.28-14.336 46.08-22.528v70.144z m-353.792-1.024c0 31.232-93.184 75.776-238.592 75.776-145.408 0-238.592-45.056-238.592-75.776v-61.952c12.8 8.192 28.16 15.872 46.08 22.528 51.712 19.456 120.32 30.208 192.512 30.208 72.192 0 140.8-10.752 192.512-30.208 17.92-6.656 33.28-14.336 46.08-22.528v61.952z m-477.184 68.096c12.8 8.192 28.16 15.872 46.08 22.528 51.712 19.456 120.32 30.208 192.512 30.208 72.192 0 140.8-10.752 192.512-30.208 17.92-6.656 33.28-14.336 46.08-22.528v53.76c0 31.232-93.184 75.776-238.592 75.776-145.408 0-238.592-45.056-238.592-75.776v-53.76z m830.976-205.312c0 31.232-93.184 75.776-238.592 75.776-24.064 0-47.616-1.024-70.144-3.584V471.04c0-9.728-2.56-19.456-7.168-28.672 25.088 2.56 50.688 4.096 77.312 4.096 72.192 0 140.8-10.752 192.512-30.208 17.92-6.656 33.28-14.336 46.08-22.528v70.144z m0-138.752c0 31.232-93.184 75.776-238.592 75.776-145.408 0-238.592-45.056-238.592-75.776V247.808c12.8 8.192 28.16 15.872 46.08 22.528 51.712 19.456 120.32 30.208 192.512 30.208s140.8-10.752 192.512-30.208c17.92-6.656 33.28-14.336 46.08-22.528v77.312zM675.84 103.424c145.408 0 238.592 45.056 238.592 75.776S821.76 255.488 675.84 255.488c-145.408 0-238.592-45.056-238.592-75.776s93.184-76.288 238.592-76.288zM322.048 394.752c32.256 0 61.44 2.048 88.064 6.144 1.024 0 1.536 0.512 2.56 0.512 92.16 13.312 147.968 45.568 147.968 69.632 0 31.232-93.184 75.776-238.592 75.776-145.408 0-238.592-45.056-238.592-75.776s92.672-76.288 238.592-76.288z m0 525.824c-145.408 0-238.592-45.056-238.592-75.776v-1.536V791.04c12.8 8.192 28.16 15.872 46.08 22.528 51.712 19.456 120.32 30.208 192.512 30.208 72.192 0 140.8-10.752 192.512-30.208 17.92-6.656 33.28-14.336 46.08-22.528V844.8c0 30.72-93.184 75.776-238.592 75.776z m353.792-103.936c-24.064 0-47.616-1.024-70.144-3.584v-93.184c23.04 2.56 46.08 3.584 70.144 3.584 72.192 0 140.8-10.752 192.512-30.208 17.92-6.656 33.28-14.336 46.08-22.528v70.656c0 30.208-92.672 75.264-238.592 75.264z" fill="currentColor"></path></svg>',
     loadMore: '<svg viewBox="0 0 1024 1024"><path d="M121.00300001 512.873c13.001 0 26.314 4.437 36.93799999 13.722l353.413 303.264 353.412-303.264c23.523-20.223 59.126-17.847 79.557 5.574 20.42800001 23.319 17.95099999 58.61-5.675 78.72900001l-390.249 335.04699999c-21.26 18.262-52.834 18.262-74.091 0l-390.248-335.048c-23.63-20.119-26.209-55.41-5.773-78.729 11.142-12.795 26.932-19.29400001 42.717-19.293v0zM121.00300001 512.873z" fill="currentColor"></path><path d="M121.00300001 66.078c13.001 0 26.313 4.438 36.93799999 13.72399999l353.413 303.26800001 353.412-303.27c23.523-20.227 59.126-17.847 79.557 5.574 20.428 23.314 17.951 58.608-5.675 78.72900001l-390.25 335.04799999c-21.255 18.262-52.834 18.262-74.091 0l-390.248-335.048c-23.63-20.12-26.206-55.414-5.77300001-78.729 11.142-12.795 26.932-19.295 42.71700001-19.295v0zM121.00300001 66.078z" fill="currentColor"></path></svg>',
     notify: '<svg viewBox="0 0 1024 1024"><path d="M643.072 97.28c-20.48-12.8-45.568-14.848-70.656-3.072l-322.56 188.928h-158.72c-36.864 0-67.072 30.208-67.072 67.072v340.48c0 36.864 30.208 67.072 67.072 67.072h158.72l325.12 190.464c9.216 4.608 19.456 6.656 29.696 6.656 13.312 0 26.624-3.584 37.888-11.264 20.48-12.8 32.768-35.328 32.768-59.392v-727.04c0-24.576-12.288-47.104-32.256-59.904zM225.28 689.664l-133.12 1.024-1.024-338.944H225.28v337.92z m381.44 197.632l-313.344-183.808V336.896l312.32-182.784 1.536 730.112-0.512 3.072z m389.12-377.344c0 18.944-15.36 34.304-34.304 34.304h-155.648a34.304 34.304 0 0 1 0-68.608h155.648c18.944 0 34.304 15.36 34.304 34.304z m-218.624-174.08c-10.24-15.872-6.144-36.864 9.216-47.104L921.6 198.656c15.872-10.752 36.864-6.144 47.104 9.216 10.24 15.872 6.144 36.864-9.216 47.104L824.32 345.088c-5.632 4.096-12.288 5.632-18.944 5.632-10.752 0.512-21.504-4.608-28.16-14.848z m182.272 428.544c15.872 10.24 19.968 31.744 9.216 47.104-6.656 9.728-17.408 15.36-28.672 15.36-6.656 0-13.312-2.048-18.944-5.632l-135.168-90.112c-15.872-10.24-19.968-31.744-9.216-47.104 10.24-15.872 31.744-19.968 47.104-9.216l135.68 89.6z" fill="currentColor"></path></svg>',
+    chat: '<svg viewBox="0 0 1024 1024"><path d="M512.146827 268.510985c-250.902034 0-454.505322 157.57406-454.505322 359.095851 0 77.452531 32.639121 168.259723 83.298552 213.54786C166.24668 863.780505 88.131465 990.268512 109.075322 1018.193654c23.957624 31.943141 164.908706-79.128039 205.700895-61.760749C355.568406 973.800196 441.499439 987.04638 512.146827 987.04638c250.902034 0 447.742067-158.01764 454.089667-359.439545C972.069626 442.506103 768.001278 268.510985 512.146827 268.510985zM511.997535 950.528886C447.362645 950.528886 362.014817 933.770578 323.347087 920.455656c-38.351961-13.206444-179.982913 66.085924-179.982913 66.085924s52.530415-136.615167 29.151701-161.97227c-42.140114-45.708088-76.209862-124.513914-76.209862-195.375037 0-184.372531 186.277885-324.240977 415.827925-324.240977s415.35105 154.807323 415.447714 324.240977C927.690131 821.643613 741.54865 950.528886 511.997535 950.528886zM311.488568 622.945485m-64.394304 0a59.955 59.955 0 1 0 128.788609 0 59.955 59.955 0 1 0-128.788609 0ZM504.000204 622.945485m-64.394304 0a59.955 59.955 0 1 0 128.788609 0 59.955 59.955 0 1 0-128.788609 0ZM696.511839 622.945485m-64.394304 0a59.955 59.955 0 1 0 128.788609 0 59.955 59.955 0 1 0-128.788609 0Z" fill="currentColor"></path></svg>',
+    drag: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>',
     newReplies: '<svg viewBox="0 0 1080 1024"><path d="M750.933333 113.777778C659.911111 62.577778 551.822222 39.822222 455.111111 56.888889c-22.755556 5.688889-39.822222 22.755556-28.444444 45.511111 5.688889 17.066667 22.755556 28.444444 39.822222 28.444444 85.333333-11.377778 170.666667 5.688889 250.311111 51.2 182.044444 102.4 250.311111 329.955556 164.977778 512-5.688889 17.066667-17.066667 28.444444-17.066667 28.444445l-79.644444-45.511111-17.066667 256c5.688889 5.688889 244.622222-119.466667 244.622222-119.466667l-79.644444-45.511111 17.066666-34.133333c96.711111-227.555556 11.377778-494.933333-199.111111-620.088889zM312.888889 870.4C119.466667 762.311111 56.888889 517.688889 164.977778 324.266667l85.333333 45.511111 17.066667-250.311111L22.755556 238.933333l79.644444 45.511111c-130.844444 233.244444-39.822222 523.377778 170.666667 648.533334 96.711111 56.888889 204.8 73.955556 307.2 56.888889 22.755556-5.688889 34.133333-22.755556 28.444444-45.511111-5.688889-17.066667-22.755556-28.444444-39.822222-28.444445-85.333333 17.066667-176.355556 0-256-45.511111z" fill="currentColor"></path></svg>',
     selWrap: '<svg viewBox="0 0 1114 1024"><path d="M363.613577 943.791123H181.806789V101.597911h181.806788v61.493473H259.342037v721.879895h104.27154v58.819844zM751.289817 884.971279H855.561358v-721.879895h-104.271541V101.597911h181.806789v844.866841h-181.806789v-61.493473z" fill="currentColor"></path></svg>',
     fileReply: '<svg viewBox="0 0 1024 1024"><path d="M516.373333 375.978667l136.576-136.576a147.797333 147.797333 0 0 1 208.853334-0.021334 147.690667 147.690667 0 0 1-0.042667 208.832l-204.8 204.778667v0.021333l-153.621333 153.6c-85.973333 85.973333-225.28 85.973333-311.253334 0.021334-85.994667-85.973333-85.973333-225.216 0.149334-311.36L431.146667 256.362667a21.333333 21.333333 0 0 0-30.165334-30.165334L162.069333 465.066667c-102.805333 102.826667-102.826667 269.056-0.149333 371.733333 102.613333 102.613333 268.970667 102.613333 371.584 0l153.6-153.642667h0.021333l0.021334-0.021333 204.778666-204.778667c74.325333-74.325333 74.346667-194.858667 0.021334-269.184-74.24-74.24-194.88-74.24-269.162667 0.042667l-136.576 136.554667-187.626667 187.626666a117.845333 117.845333 0 0 0-0.106666 166.826667 118.037333 118.037333 0 0 0 166.826666-0.106667l255.850667-255.829333a21.333333 21.333333 0 0 0-30.165333-30.165333L435.136 669.973333a75.370667 75.370667 0 0 1-106.496 0.106667 75.178667 75.178667 0 0 1 0.128-106.496l187.605333-187.605333z" fill="currentColor"></path></svg>',
@@ -295,14 +298,14 @@
 #yhx-root{position:fixed;inset:0;z-index:2147483647;pointer-events:none;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif;font-size:14px;line-height:1.6;letter-spacing:0;color:#333;text-align:left;-webkit-font-smoothing:antialiased}
 #yhx-root *{box-sizing:border-box}
 #yhx-root button{letter-spacing:0}
-#yhx-root{
+:root,#yhx-root{
   --yhx-accent:#1abc9c;--yhx-accent-d:#16a085;--yhx-accent-soft:rgba(26,188,156,.12);
   --yhx-bg:#fff;--yhx-bg-2:#f7f8f9;--yhx-bg-3:#f1f2f4;
   --yhx-text:#222;--yhx-text-2:#6b7280;--yhx-text-3:#9aa0a6;
   --yhx-border:#e6e8eb;--yhx-border-2:#d8dbe0;
   --yhx-danger:#e5534b;--yhx-shadow:0 12px 40px rgba(17,24,39,.16);
 }
-html.yh-theme-dark #yhx-root{
+html.yh-theme-dark,html.yh-theme-dark #yhx-root{
   --yhx-bg:#1f2023;--yhx-bg-2:#26282c;--yhx-bg-3:#2e3135;
   --yhx-text:#e8eaed;--yhx-text-2:#a8adb5;--yhx-text-3:#7c828b;
   --yhx-border:#33363b;--yhx-border-2:#3f434a;
@@ -310,7 +313,7 @@ html.yh-theme-dark #yhx-root{
   --yhx-shadow:0 12px 40px rgba(0,0,0,.5);
 }
 @media (prefers-color-scheme:dark){
-  html.yh-theme-system #yhx-root{
+  html.yh-theme-system,html.yh-theme-system #yhx-root{
     --yhx-bg:#1f2023;--yhx-bg-2:#26282c;--yhx-bg-3:#2e3135;
     --yhx-text:#e8eaed;--yhx-text-2:#a8adb5;--yhx-text-3:#7c828b;
     --yhx-border:#33363b;--yhx-border-2:#3f434a;
@@ -356,7 +359,7 @@ html.yh-theme-dark .yhx-glass:hover{background:rgba(52,58,64,.72);color:#48d5b8;
 .yhx-mask.is-open .yhx-sheet{transform:none;opacity:1}
 .yhx-hd{display:flex;align-items:center;gap:10px;padding:16px 18px 14px;background:linear-gradient(160deg,var(--yhx-accent-soft),transparent 62%);border-bottom:1px solid var(--yhx-border);flex:none}
 .yhx-hd-title{font-size:16px;font-weight:600;color:var(--yhx-text);display:flex;align-items:center;gap:8px}
-.yhx-hd-title svg{width:18px;height:18px;color:var(--yhx-accent)}
+.yhx-hd-title svg{width:18px;height:18px;color:var(--yhx-accent);flex:none}
 .yhx-hd-badge{font-size:11px;font-weight:500;color:var(--yhx-accent);background:var(--yhx-accent-soft);padding:2px 7px;border-radius:20px;letter-spacing:.2px}
 .yhx-grow{flex:1}
 .yhx-iconbtn{flex:none;width:34px;height:34px;border:0;border-radius:10px;background:transparent;color:var(--yhx-text-2);display:flex;align-items:center;justify-content:center;cursor:pointer;pointer-events:auto;transition:background-color .15s,color .15s}
@@ -477,6 +480,47 @@ html.yhx-file-reply-btn #replyActions.has-sort a.reply-file-link{top:0}
  * 也没有 browser 默认焦点环（深色 outline），这里一并去掉；
  */
 html.yhx-file-reply-btn a.reply-file-link:hover,html.yhx-file-reply-btn a.reply-file-link:focus{background-image:linear-gradient(#599bdc,#3072b3);border-color:#3072b3;color:#fff;outline:0}
+/* 快捷回复：回帖框上方的一排回复语 */
+/* 快捷回复栏：输入框下方、快速回复按钮上方，占满整行 */
+.yhx-qr{display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin:8px 7px 6px;width:auto}
+.yhx-qr-label{font-size:12px;color:var(--yhx-text-3);flex:none;letter-spacing:.2px}
+.yhx-qr .yhx-qr-chip{flex:none;display:inline-flex;align-items:center;height:24px;padding:0 10px;border:1px solid var(--yhx-border-2);background:var(--yhx-bg);color:var(--yhx-text-2);border-radius:7px;font-size:12px;line-height:1;cursor:pointer;white-space:nowrap;box-shadow:0 1px 0 rgba(17,24,39,.03);transition:border-color .15s,color .15s,background-color .15s,transform .1s}
+.yhx-qr .yhx-qr-chip:hover{border-color:var(--yhx-accent);color:var(--yhx-accent);background:var(--yhx-accent-soft)}
+.yhx-qr .yhx-qr-chip:active{transform:translateY(1px)}
+.yhx-qr-edit{flex:none;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;border:0;background:transparent;color:var(--yhx-text-3);border-radius:6px;cursor:pointer}
+.yhx-qr-edit:hover{color:var(--yhx-accent);background:var(--yhx-accent-soft)}
+.yhx-qr-edit svg{width:14px;height:14px}
+.yhx-qr-rows{display:flex;flex-direction:column;gap:6px;max-height:210px;overflow:auto;margin-bottom:10px}
+.yhx-qr-row{display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid var(--yhx-border);border-radius:8px}
+.yhx-qr-rowmain{flex:1;min-width:0}
+.yhx-qr-rowtitle{font-size:13px;color:var(--yhx-text);line-height:1.35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.yhx-qr-rowbody{font-size:12px;color:var(--yhx-text-3);line-height:1.35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px}
+.yhx-qr-empty{font-size:12px;color:var(--yhx-text-3);padding:8px 2px}
+/* 搜索表情：表情面板「最近」后的入口 + 展开的搜索栏 + 结果网格 */
+.yhx-es-tab{flex:none;display:inline-flex;align-items:center;justify-content:center;width:28px;height:24px;padding:0;border:0;background:transparent;color:var(--yhx-text-2);border-radius:6px;cursor:pointer;transition:color .15s,background-color .15s}
+.yhx-es-tab:hover{color:var(--yhx-accent);background:var(--yhx-accent-soft)}
+.yhx-es-tab svg{width:15px;height:15px}
+.yhx-es-bar{display:flex;align-items:center;gap:6px;flex:none;width:0;overflow:hidden;opacity:0;transition:width .22s ease,opacity .18s ease}
+.yhx-es-bar.is-open{width:190px;opacity:1}
+.yhx-es-input{flex:1;min-width:0;height:26px;padding:0 12px;border:1px solid var(--yhx-border-2);border-radius:999px;background:var(--yhx-bg);color:var(--yhx-text);font-size:12px;line-height:1;outline:0;transition:border-color .15s}
+.yhx-es-input:focus{border-color:var(--yhx-accent)}
+.yhx-es-pane{padding:8px;min-height:120px}
+.yhx-es-hint{font-size:12px;color:var(--yhx-text-3);line-height:1.7;padding:6px 2px}
+.yhx-es-hint b{color:var(--yhx-text-2);font-weight:600}
+.yhx-es-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.yhx-es-card{display:flex;flex-direction:column;border:1px solid var(--yhx-border);border-radius:9px;overflow:hidden;background:var(--yhx-bg)}
+.yhx-es-card img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;cursor:pointer;background:var(--yhx-bg-2)}
+.yhx-es-card img:hover{opacity:.92}
+.yhx-es-card-acts{display:flex;border-top:1px solid var(--yhx-border)}
+.yhx-es-card-act{flex:1;height:27px;border:0;background:transparent;color:var(--yhx-text-2);font-size:11.5px;line-height:1;cursor:pointer;transition:background-color .15s,color .15s}
+.yhx-es-card-act:hover{background:var(--yhx-accent-soft);color:var(--yhx-accent)}
+.yhx-es-card-act + .yhx-es-card-act{border-left:1px solid var(--yhx-border)}
+.yhx-es-more{grid-column:1/-1;text-align:center;font-size:12px;color:var(--yhx-text-3);padding:6px 0;cursor:pointer}
+.yhx-qr-drag{flex:none;width:18px;height:28px;display:inline-flex;align-items:center;justify-content:center;color:var(--yhx-text-3);cursor:grab;touch-action:none;border-radius:5px}
+.yhx-qr-drag:active{cursor:grabbing}
+.yhx-qr-drag svg{width:14px;height:14px}
+.yhx-qr-row.is-dragging{opacity:.65;box-shadow:0 6px 18px rgba(17,24,39,.14);background:var(--yhx-bg-2);position:relative;z-index:2}
+.yhx-qr-bodyinput{resize:vertical;min-height:64px;font-family:inherit}
 .yhx-rich-wrap{position:relative}
 .yhx-rich{display:block;width:100%;min-height:110px;padding:5px 6px;box-sizing:border-box;font-family:inherit;font-size:15px;line-height:1.7;color:#333;outline:0;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;cursor:text;overflow-y:auto;letter-spacing:0}
 .yhx-rich:focus{outline:0}
@@ -521,7 +565,7 @@ html.yh-theme-dark .yhx-rich-edit{border-color:#26282c}
 .yhx-editft{display:flex;gap:10px;justify-content:flex-end;padding:12px 16px calc(14px + env(safe-area-inset-bottom))}
 .yhx-editft .yhx-btn{flex:none;min-width:84px}
 /* ---------- 帖子悬浮预览（挂在 body 下，不在 #yhx-root 里，颜色写死） ---------- */
-.yhx-tp{position:fixed;z-index:2147483647;display:none;flex-direction:column;border:1px solid #e3e3e3;border-radius:12px;background:#fff;box-shadow:0 14px 40px rgba(17,24,39,.2);overflow:hidden;font:14px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif;letter-spacing:0;color:#333;text-align:left}
+.yhx-tp{position:fixed;z-index:2147483000;display:none;flex-direction:column;border:1px solid #e3e3e3;border-radius:12px;background:#fff;box-shadow:0 14px 40px rgba(17,24,39,.2);overflow:hidden;font:14px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif;letter-spacing:0;color:#333;text-align:left}
 .yhx-tp.show{display:flex}
 /* 没有标题栏：浮层里只有正文，高度由 JS 按剩余空间算 */
 .yhx-tp-body{flex:1 1 auto;min-height:0;max-height:none;padding:12px 14px;overflow-y:auto;overscroll-behavior:contain;font-size:13.5px;line-height:1.78;color:#3d4450;word-break:break-word;overflow-wrap:anywhere}
@@ -556,7 +600,7 @@ html.yh-theme-dark .yhx-tp-body img{background:#2a2d31}
 /* ---------- 用户名片 ----------
    点击用户名（userinfo.aspx?touserid=xxx）后在链接旁弹出的资料卡。
    结构：头像+昵称头区 / 可滚动的中部（统计块、字段行、签名）/ 底部按钮条。 */
-.yhx-uc{position:fixed;z-index:2147483647;display:none;flex-direction:column;width:320px;border:1px solid #e3e3e3;border-radius:14px;background:#fff;box-shadow:0 14px 40px rgba(17,24,39,.2);overflow:hidden;font:13px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif;letter-spacing:0;color:#333;text-align:left}
+.yhx-uc{position:fixed;z-index:2147483000;display:none;flex-direction:column;width:320px;border:1px solid #e3e3e3;border-radius:14px;background:#fff;box-shadow:0 14px 40px rgba(17,24,39,.2);overflow:hidden;font:13px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif;letter-spacing:0;color:#333;text-align:left}
 .yhx-uc.show{display:flex}
 /* 毛玻璃：半透明背景 + backdrop 模糊。
  * 内表面统一用中性深色调（不是白色叠加），卡片透明度高的时候
@@ -704,7 +748,7 @@ html.yh-theme-dark .yhx-hs-opt.is-on{color:#2ec8a8}
 .yhx-confirm-name{font-size:13.5px;font-weight:600;color:var(--yhx-text);word-break:break-all}
 .yhx-confirm-tip{font-size:12.5px;color:var(--yhx-text-2)}
 /* ---------- 一键收藏表情（每张合格图片一个常驻按钮） ---------- */
-.yhx-eg-btn{position:fixed;z-index:2147483647;display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;border:0;background:rgba(32,36,42,.85);color:#fff;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.3);padding:0;margin:0}
+.yhx-eg-btn{position:fixed;z-index:10;display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;border:0;background:rgba(32,36,42,.85);color:#fff;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.3);padding:0;margin:0}
 .yhx-eg-btn svg{width:16px;height:16px;display:block}
 .yhx-eg-btn:hover{background:#1abc9c}
 .yhx-eg-btn.is-done{background:#16a085}
@@ -4761,8 +4805,20 @@ html.yh-theme-dark .yhx-ae-reset{background:#26282c;border-color:#3f434a;color:#
       if (!form) return;
       ta.value = content;
       ta.dispatchEvent(new Event('input', { bubbles: true }));
+      const nf = Registry.map.get('notifyFloor');
+      const notifyOn = nf && Registry.isOn('notifyFloor');
+      if (notifyOn) {
+        const cb = document.querySelector('#cbx, input[name="sendmsg"]');
+        if (cb && cb.checked) {
+          cb.checked = false;
+          cb.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      }
       const sub = form.querySelector('input[type="submit"][name="g"], button[type="submit"]');
       if (sub) sub.click(); else form.submit();
+      if (notifyOn) {
+        setTimeout(() => { try { nf.apply(); } catch (_) {} }, 2500);
+      }
       this.markEaten(pid, today);
       Store.set('autoEatLast', content);
       const p = remainEl.parentNode;
@@ -5608,9 +5664,32 @@ html.yh-theme-dark .yhx-ae-reset{background:#26282c;border-color:#3f434a;color:#
     desc: '回复时自动勾选「通知楼主」，不用每次手动点。',
     _obs: null,
     active() { return true; },
+    isMeatContext() {
+      if (!/\/bbs-\d+/.test(location.pathname)) return false;
+      const pid = (location.pathname.match(/\/bbs-(\d+)/) || [])[1];
+      if (!pid) return false;
+      const ae = Registry.map.get('autoEat');
+      if (ae && typeof ae.dates === 'function') {
+        const now = new Date();
+        const today = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+        if (ae.dates()[pid] === today) return false;
+      }
+      const remainEl = document.querySelector('.yushuzi');
+      if (!remainEl) return false;
+      const n = parseInt((remainEl.textContent || '').trim(), 10);
+      return !isNaN(n) && n > 0;
+    },
     apply() {
       const cb = document.querySelector('#cbx, input[name="sendmsg"]');
-      if (!cb || cb.checked) return;
+      if (!cb) return;
+      if (this.isMeatContext()) {
+        if (cb.checked) {
+          cb.checked = false;
+          cb.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        return;
+      }
+      if (cb.checked) return;
       cb.checked = true;
       cb.dispatchEvent(new Event('change', { bubbles: true }));
     },
@@ -5634,6 +5713,683 @@ html.yh-theme-dark .yhx-ae-reset{background:#26282c;border-color:#3f434a;color:#
     },
   };
   Registry.register(notifyFloor);
+  const QUICK_REPLY_DEFAULT = [
+    { t: '感谢分享', b: '感谢分享' },
+    { t: '+30', b: '+30' },
+    { t: '已阅', b: '已阅' },
+  ];
+  const quickReply = {
+    id: 'quickReply',
+    name: '快捷回复',
+    group: '编辑器增强',
+    order: 27,
+    defaultEnabled: false,
+    icon: ICON.chat,
+    desc: '回帖框上方加一排常用回复语，点一下直接填入；可开启「同步发送」自动提交，回复语支持自定义（标题+正文）。',
+    options: [
+      { key: 'autoSend', name: '同步发送', hint: '点击回复语后自动填入并发送', default: false },
+    ],
+    _obs: null,
+    phrases() {
+      const v = Store.get('quickReplyPhrases', null);
+      if (Array.isArray(v) && v.length) {
+        return v.filter((x) => x && typeof x === 'object').map((x) => ({ t: String(x.t || ''), b: String(x.b || '') }));
+      }
+      return QUICK_REPLY_DEFAULT.map((x) => ({ t: x.t, b: x.b }));
+    },
+    savePhrases(list) { Store.set('quickReplyPhrases', list); },
+    active() { return $$('.ubb-box').length > 0; },
+    init() {
+      this.mount();
+      this._obs = new MutationObserver(debounce(() => this.mount(), 250));
+      this._obs.observe(document.body, { childList: true, subtree: true });
+    },
+    destroy() {
+      if (this._obs) { this._obs.disconnect(); this._obs = null; }
+      $$('.yhx-qr').forEach((el) => el.remove());
+    },
+    status() {
+      const n = this.phrases().length;
+      return $$('.yhx-qr').length ? (n + ' 条回复语已就位') : '当前页面无回帖框';
+    },
+    mount() {
+      if (!Registry.isOn(this.id)) return;
+      const sig = JSON.stringify(this.phrases());
+      $$('.ubb-box').forEach((box) => {
+        const anchor = box.closest('.centered-container') || box.parentElement;
+        if (!anchor || !anchor.parentElement) return;
+        const holder = anchor.parentElement;
+        let bar = holder.querySelector(':scope > .yhx-qr');
+        if (bar && bar.getAttribute('data-sig') === sig) return;
+        const fresh = this.buildBar();
+        fresh.setAttribute('data-sig', sig);
+        if (bar) bar.replaceWith(fresh);
+        else anchor.after(fresh);
+      });
+    },
+    buildBar() {
+      const bar = h('div', { class: 'yhx-qr' });
+      this.phrases().forEach((p) => {
+        const label = p.t || p.b;
+        if (!label) return;
+        bar.appendChild(h('button', {
+          class: 'yhx-qr-chip', type: 'button', text: label, title: p.b || label,
+          onclick: (e) => {
+            e.preventDefault(); e.stopPropagation();
+            const boxEl = bar.parentElement ? bar.parentElement.querySelector('.ubb-box') : null;
+            if (boxEl) this.use(boxEl, p);
+          },
+        }));
+      });
+      bar.appendChild(h('button', {
+        class: 'yhx-qr-edit', type: 'button', title: '编辑回复语', 'aria-label': '编辑回复语',
+        html: ICON.pen,
+        onclick: (e) => { e.preventDefault(); e.stopPropagation(); this.edit(); },
+      }));
+      return bar;
+    },
+    use(box, p) {
+      const ta = box.querySelector('textarea');
+      if (!ta) return;
+      const text = p.b || p.t || '';
+      ta.value = text;
+      try {
+        const g = Registry.map.get('ubbPreview');
+        if (g && g.render && g._inst && g._inst.get(ta)) g.render(ta, false);
+      } catch (_) {}
+      try { ta.dispatchEvent(new Event('input', { bubbles: true })); } catch (_) {}
+      try { ta.focus(); } catch (_) {}
+      if (!Config.opt(this.id, 'autoSend', false)) return;
+      const form = ta.closest('form');
+      if (!form) return;
+      const btn = form.querySelector('input.reply-submit-btn');
+      if (btn) this.submit(form, btn);
+      else if (form.requestSubmit) form.requestSubmit();
+    },
+    submit(form, btn) {
+      let fired = false;
+      const origOpen = XMLHttpRequest.prototype.open;
+      const origFetch = window.fetch;
+      try {
+        XMLHttpRequest.prototype.open = function (...a) { fired = true; return origOpen.apply(this, a); };
+        window.fetch = function (...a) { fired = true; return origFetch.apply(this, a); };
+      } catch (_) {}
+      try { btn.click(); } catch (_) {}
+      setTimeout(() => {
+        try { XMLHttpRequest.prototype.open = origOpen; window.fetch = origFetch; } catch (_) {}
+        if (fired) return;
+        try { form.submit(); } catch (_) {}
+      }, 350);
+    },
+    edit() {
+      const self = this;
+      const close = () => {
+        document.removeEventListener('keydown', onKey);
+        mask.classList.remove('is-open');
+        setTimeout(() => mask.remove(), 260);
+        self.mount();
+      };
+      const onKey = (e) => { if (e.key === 'Escape') { e.preventDefault(); close(); } };
+      const rows = h('div', { class: 'yhx-qr-rows' });
+      const renderRows = () => {
+        const cur = self.phrases();
+        rows.textContent = '';
+        if (!cur.length) {
+          rows.appendChild(h('div', { class: 'yhx-qr-empty', text: '还没有回复语，在下面添加一条' }));
+        }
+        cur.forEach((p, idx) => {
+          const rowEl = h('div', { class: 'yhx-qr-row', dataset: { idx: String(idx) } },
+            h('div', { class: 'yhx-qr-drag', title: '拖动排序', html: ICON.drag }),
+            h('div', { class: 'yhx-qr-rowmain' },
+              h('div', { class: 'yhx-qr-rowtitle', text: p.t || p.b }),
+              h('div', { class: 'yhx-qr-rowbody', text: p.b }),
+            ),
+            h('button', {
+              class: 'yhx-iconbtn', type: 'button', title: '编辑', 'aria-label': '编辑',
+              html: ICON.pen,
+              onclick: () => {
+                const now = self.phrases();
+                const item = now[idx];
+                if (!item) return;
+                titleInput.value = item.t || item.b || '';
+                bodyInput.value = item.b || item.t || '';
+                bodyDirty = true;
+                editingIdx = idx;
+                saveBtn.textContent = '保存修改';
+                cancelBtn.hidden = false;
+                titleInput.focus();
+              },
+            }),
+            h('button', {
+              class: 'yhx-iconbtn', type: 'button', title: '删除', 'aria-label': '删除',
+              html: ICON.trash,
+              onclick: () => {
+                const now = self.phrases();
+                const item = now[idx];
+                const label = (item && (item.t || item.b)) || '';
+                if (!window.confirm('确定删除快捷回复「' + label + '」？')) return;
+                now.splice(idx, 1);
+                self.savePhrases(now);
+                if (editingIdx === idx) resetForm();
+                else if (editingIdx > idx) editingIdx -= 1;
+                renderRows();
+              },
+            }),
+          );
+          rowEl.querySelector('.yhx-qr-drag').addEventListener('pointerdown', (e) => startDrag(rowEl, e));
+          rows.appendChild(rowEl);
+        });
+      };
+      const startDrag = (rowEl, e) => {
+        if (e.button !== undefined && e.button !== 0) return;
+        e.preventDefault();
+        const box = rows;
+        rowEl.classList.add('is-dragging');
+        const onMove = (ev) => {
+          if (ev.cancelable) ev.preventDefault();
+          const at = document.elementFromPoint(ev.clientX, ev.clientY);
+          const over = at ? at.closest('.yhx-qr-row') : null;
+          if (!over || over === rowEl || over.parentElement !== box) return;
+          const r = over.getBoundingClientRect();
+          const before = ev.clientY < r.top + r.height / 2;
+          box.insertBefore(rowEl, before ? over : over.nextSibling);
+        };
+        const finish = () => {
+          window.removeEventListener('pointermove', onMove);
+          window.removeEventListener('pointerup', finish);
+          window.removeEventListener('pointercancel', finish);
+          rowEl.classList.remove('is-dragging');
+          const order = [...box.querySelectorAll('.yhx-qr-row')].map((r) => Number(r.getAttribute('data-idx')));
+          const cur = self.phrases();
+          const next = order.map((i) => cur[i]).filter(Boolean);
+          if (next.length === cur.length) self.savePhrases(next);
+          renderRows();
+        };
+        window.addEventListener('pointermove', onMove, { passive: false });
+        window.addEventListener('pointerup', finish);
+        window.addEventListener('pointercancel', finish);
+      };
+      const titleInput = h('input', { type: 'text', class: 'yhx-editinput', placeholder: '标题（如：感谢分享）', maxlength: '60' });
+      const bodyInput = h('textarea', { class: 'yhx-editinput yhx-qr-bodyinput', placeholder: '正文（默认与标题相同，可单独修改，支持 UBB）', rows: '3' });
+      let bodyDirty = false;
+      let editingIdx = -1;
+      titleInput.addEventListener('input', () => {
+        if (!bodyDirty) bodyInput.value = titleInput.value;
+      });
+      bodyInput.addEventListener('input', () => { bodyDirty = true; });
+      const cancelBtn = h('button', { class: 'yhx-btn', type: 'button', text: '取消编辑', hidden: 'hidden', onclick: () => resetForm() });
+      const saveBtn = h('button', { class: 'yhx-btn primary', type: 'button', text: '添加', onclick: () => commit() });
+      const resetForm = () => {
+        titleInput.value = '';
+        bodyInput.value = '';
+        bodyDirty = false;
+        editingIdx = -1;
+        saveBtn.textContent = '添加';
+        cancelBtn.hidden = true;
+      };
+      const commit = () => {
+        const t = titleInput.value.trim();
+        const b = bodyInput.value.trim();
+        if (!t && !b) { UI.toast('请先填写标题或正文', 'error'); titleInput.focus(); return; }
+        const now = self.phrases();
+        const item = { t: t || b, b: b || t };
+        if (editingIdx >= 0 && editingIdx < now.length) {
+          now[editingIdx] = item;
+          UI.toast('已保存修改', 'ok');
+        } else {
+          now.push(item);
+        }
+        self.savePhrases(now);
+        resetForm();
+        renderRows();
+        titleInput.focus();
+      };
+      const sheet = h('div', { class: 'yhx-sheet yhx-editdlg', role: 'dialog', 'aria-modal': 'true' },
+        h('div', { class: 'yhx-hd' },
+          h('div', { class: 'yhx-hd-title', html: ICON.chat + '<span>编辑快捷回复</span>' }),
+          h('div', { class: 'yhx-grow' }),
+          h('button', { class: 'yhx-iconbtn', type: 'button', 'aria-label': '关闭', html: ICON.close, onclick: () => close() }),
+        ),
+        h('div', { class: 'yhx-editbody' },
+          rows,
+          h('label', { class: 'yhx-field-row' }, h('span', { class: 'yhx-field-label', text: '标题' }), titleInput),
+          h('label', { class: 'yhx-field-row' }, h('span', { class: 'yhx-field-label', text: '正文' }), bodyInput),
+          h('div', { class: 'yhx-editft' },
+            cancelBtn,
+            saveBtn,
+          ),
+        ),
+      );
+      const mask = h('div', { class: 'yhx-mask', hidden: 'hidden' }, sheet);
+      mask.addEventListener('click', (e) => { if (e.target === mask) close(); });
+      document.addEventListener('keydown', onKey);
+      renderRows();
+      UI.root.appendChild(mask);
+      mask.hidden = false;
+      requestAnimationFrame(() => mask.classList.add('is-open'));
+      setTimeout(() => titleInput.focus(), 260);
+    },
+  };
+  Registry.register(quickReply);
+  const EMOJI_LEGACY = {
+    tenor: { name: 'Tenor', api: 'https://tenor.googleapis.com/v2/search?q={q}&key={key}&limit=24&media_filter=gif' },
+    giphy: { name: 'Giphy', api: 'https://api.giphy.com/v1/gifs/search?q={q}&api_key={key}&limit=24&rating=pg' },
+  };
+  const emojiSearch = {
+    id: 'emojiSearch',
+    name: '搜索表情',
+    group: '编辑器增强',
+    order: 28,
+    defaultEnabled: false,
+    icon: ICON.search,
+    desc: '表情面板「最近」后加搜索入口，按关键词搜表情，可收藏到自定义表情或直接插入回复框。',
+    _obs: null,
+    _seq: 0,
+    RECOMMEND: { name: 'MemeCub', api: 'https://memecub.com/api/v1/search?q={q}' },
+    PAGE_SIZE: 24,
+    _urls: [],
+    _total: null,
+    _loadingMore: false,
+    _open: false,
+    _q: '',
+    cfg() {
+      const c = Store.get('emojiSearchCfg', null);
+      if (!c || typeof c !== 'object') return { name: '', api: '', key: '' };
+      if (!c.api && c.provider && EMOJI_LEGACY[c.provider]) {
+        const L = EMOJI_LEGACY[c.provider];
+        return { name: L.name, api: L.api, key: String(c.key || '').trim() };
+      }
+      return {
+        name: String(c.name || '').trim(),
+        api: String(c.api || '').trim(),
+        key: String(c.key || '').trim(),
+      };
+    },
+    configured() { const c = this.cfg(); return !!(c.name && c.api); },
+    buildUrl(api, q, key, offset) {
+      const raw = String(api || '').trim();
+      const hasQ = /\{q\}/.test(raw);
+      let filled = raw.replace(/\{q\}/g, encodeURIComponent(q)).replace(/\{key\}/g, encodeURIComponent(key));
+      if (!hasQ) filled += (filled.indexOf('?') > -1 ? '&' : '?') + 'q=' + encodeURIComponent(q);
+      try {
+        const u = new URL(filled, location.href);
+        u.searchParams.set('limit', String(this.PAGE_SIZE));
+        if (offset > 0) u.searchParams.set('offset', String(offset));
+        else u.searchParams.delete('offset');
+        return u.href;
+      } catch (_) {
+        let out = filled;
+        out += '&limit=' + this.PAGE_SIZE;
+        if (offset > 0) out += '&offset=' + offset;
+        return out;
+      }
+    },
+    authHeaders(api, key) {
+      if (!key) return null;
+      if (/\{key\}/.test(String(api || ''))) return null;
+      return { Authorization: 'Bearer ' + key };
+    },
+    parseAny(j) {
+      if (j && Array.isArray(j.data) && j.data.length) {
+        const list = j.data.map((it) => {
+          if (!it || typeof it !== 'object') return '';
+          return String(it.url || it.preview_url || it.thumb_url || '').trim();
+        }).filter((u) => /^https?:\/\/\S+/i.test(u));
+        if (list.length) return list.slice(0, 60);
+      }
+      const byKey = new Map();
+      const score = (u) => {
+        let n = 0;
+        if (!/thumb|preview|small|tiny|mini|thumbnail|\/s\//i.test(u)) n += 2;
+        if (/\.gif(\?|$)/i.test(u)) n += 1;
+        return n;
+      };
+      const walk = (n, depth) => {
+        if (depth > 9) return;
+        if (typeof n === 'string') {
+          const t = n.trim();
+          if (!/^https?:\/\/\S+\.(gif|png|jpe?g|webp)(\?\S*)?$/i.test(t)) return;
+          const base = (t.split('?')[0].split('/').pop() || t).replace(/\.[a-z0-9]+$/i, '');
+          const prev = byKey.get(base);
+          if (!prev || score(t) > score(prev)) byKey.set(base, t);
+          return;
+        }
+        if (Array.isArray(n)) { for (const x of n) walk(x, depth + 1); return; }
+        if (n && typeof n === 'object') {
+          for (const k of Object.keys(n)) walk(n[k], depth + 1);
+        }
+      };
+      walk(j, 0);
+      return Array.from(byKey.values()).slice(0, 60);
+    },
+    active() { return $$('.ubb-emoji-tabs').length > 0; },
+    init() {
+      this.mount();
+      this._obs = new MutationObserver(debounce(() => this.mount(), 250));
+      this._obs.observe(document.body, { childList: true, subtree: true });
+    },
+    destroy() {
+      if (this._obs) { this._obs.disconnect(); this._obs = null; }
+      this._open = false; this._q = ''; this._seq += 1;
+      $('.yhx-es-tab, .yhx-es-bar, .yhx-es-pane').forEach((el) => el.remove());
+      $$('.ubb-emoji-body > *').forEach((el) => { el.style.display = ''; });
+    },
+    status() {
+      const c = this.cfg();
+      if (!this.configured()) return '未配置服务商名称或 API 地址';
+      return '已配置：' + c.name + (c.key ? '（带 Key）' : '');
+    },
+    mount() {
+      if (!Registry.isOn(this.id)) return;
+      $$('.ubb-emoji-tabs').forEach((tabs) => {
+        if (tabs.querySelector('.yhx-es-tab')) return;
+        const firstTab = tabs.querySelector('.ubb-emoji-tab');
+        const btn = h('button', { class: 'yhx-es-tab', type: 'button', title: '搜索表情', 'aria-label': '搜索表情', html: ICON.search });
+        const input = h('input', { class: 'yhx-es-input', type: 'text', placeholder: '搜索表情，回车确认' });
+        const bar = h('div', { class: 'yhx-es-bar' }, input);
+        if (firstTab && firstTab.nextSibling) {
+          tabs.insertBefore(btn, firstTab.nextSibling);
+          tabs.insertBefore(bar, btn.nextSibling);
+        } else {
+          tabs.appendChild(btn);
+          tabs.appendChild(bar);
+        }
+        btn.addEventListener('click', (e) => {
+          e.preventDefault(); e.stopPropagation();
+          this.toggle(bar);
+        });
+        if (this._open) {
+          bar.classList.add('is-open');
+          input.value = this._q || '';
+          setTimeout(() => {
+            if (this._urls && this._urls.length) this.renderResults();
+            else if (this._q) this.search(this._q);
+            else if (!this.configured()) this.renderHint('还没配置搜索表情服务', true);
+            else this.renderHint('输入关键词搜索表情');
+          }, 30);
+        }
+        let timer = null;
+        input.addEventListener('input', () => {
+          clearTimeout(timer);
+          timer = setTimeout(() => this.search(input.value.trim()), 450);
+        });
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') { e.preventDefault(); clearTimeout(timer); this.search(input.value.trim()); }
+          if (e.key === 'Escape') { e.preventDefault(); bar.classList.remove('is-open'); }
+        });
+        tabs.addEventListener('click', (e) => {
+          const t = e.target.closest('.ubb-emoji-tab');
+          if (t && !t.classList.contains('yhx-es-tab')) this.restorePanes();
+        }, true);
+      });
+    },
+    toggle(bar) {
+      const open = bar.classList.toggle('is-open');
+      this._open = open;
+      if (!open) { this.restorePanes(); return; }
+      const input = bar.querySelector('input');
+      if (!this.configured()) this.renderHint('还没配置搜索表情服务', true);
+      else if (!input.value.trim()) this.renderHint('输入关键词搜索表情');
+      setTimeout(() => { try { input.focus(); } catch (_) {} }, 240);
+    },
+    panelBody() {
+      const pop = document.querySelector('.ubb-pop.emoji');
+      return pop ? pop.querySelector('.ubb-emoji-body') : null;
+    },
+    ensurePane() {
+      const body = this.panelBody();
+      if (!body) return null;
+      let pane = body.querySelector('.yhx-es-pane');
+      if (!pane) {
+        pane = h('div', { class: 'yhx-es-pane' });
+        body.appendChild(pane);
+      }
+      [...body.children].forEach((c) => {
+        if (c === pane) { c.style.display = ''; }
+        else { c.style.display = 'none'; }
+      });
+      return pane;
+    },
+    restorePanes() {
+      const body = this.panelBody();
+      if (!body) return;
+      const pane = body.querySelector('.yhx-es-pane');
+      if (pane) { pane.style.display = 'none'; pane.textContent = ''; }
+      [...body.children].forEach((c) => {
+        if (c !== pane) c.style.display = '';
+      });
+    },
+    renderHint(text, needConfig) {
+      const pane = this.ensurePane();
+      if (!pane) return;
+      pane.textContent = '';
+      const box = h('div', { class: 'yhx-es-hint' });
+      box.appendChild(h('div', { text: text }));
+      if (needConfig) {
+        box.appendChild(h('div', { style: 'margin-top:8px' },
+          h('button', {
+            class: 'yhx-btn primary', type: 'button', text: '去配置',
+            onclick: (e) => {
+              e.preventDefault(); e.stopPropagation();
+              UI.open();
+              setTimeout(() => { try { UI.openSubPanel('emojiSearch'); } catch (_) {} }, 420);
+            },
+          }),
+        ));
+      }
+      pane.appendChild(box);
+    },
+    renderResults(list) {
+      const pane = this.ensurePane();
+      if (!pane) return;
+      const urls = Array.isArray(list) ? list : this._urls;
+      if (Array.isArray(list)) this._urls = list;
+      pane.textContent = '';
+      const grid = h('div', { class: 'yhx-es-grid' });
+      urls.forEach((u) => {
+        const img = h('img', { src: u, loading: 'lazy', alt: '', title: '点击插入回复框' });
+        img.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); this.insert(u); });
+        grid.appendChild(h('div', { class: 'yhx-es-card' },
+          img,
+          h('div', { class: 'yhx-es-card-acts' },
+            h('button', {
+              class: 'yhx-es-card-act', type: 'button', text: '收藏',
+              onclick: (e) => { e.preventDefault(); e.stopPropagation(); this.save(u); },
+            }),
+            h('button', {
+              class: 'yhx-es-card-act', type: 'button', text: '发送',
+              onclick: (e) => { e.preventDefault(); e.stopPropagation(); this.insert(u); },
+            }),
+          ),
+        ));
+      });
+      pane.appendChild(grid);
+      if (this.hasMore()) {
+        pane.appendChild(h('div', {
+          class: 'yhx-es-more', role: 'button', tabindex: '0', text: '加载更多',
+          onclick: (e) => { e.preventDefault(); e.stopPropagation(); this.loadMore(); },
+        }));
+      } else if (urls.length > this.PAGE_SIZE) {
+        pane.appendChild(h('div', { class: 'yhx-es-more', text: '没有更多了' }));
+      }
+    },
+    save(url) {
+      const r = EmojiData.add(url, '');
+      if (r && r.ok) UI.toast('已收藏到自定义表情', 'ok');
+      else if (r && r.reason === 'duplicate') UI.toast('这个表情已经收藏过了', '');
+      else if (r && r.reason === 'limit') UI.toast('自定义表情已满（' + EmojiData.MAX + ' 个）', 'error');
+      else UI.toast('收藏失败', 'error');
+    },
+    request(url, headers) {
+      return new Promise((resolve, reject) => {
+        let done = false;
+        let watchdog = null;
+        const finish = (fn, val) => {
+          if (done) return;
+          done = true;
+          if (watchdog) clearTimeout(watchdog);
+          fn(val);
+        };
+        watchdog = setTimeout(() => finish(reject, new Error('请求超时')), 12000);
+        const gmr = (typeof GM_xmlhttpRequest === 'function') ? GM_xmlhttpRequest : null;
+        if (gmr) {
+          try {
+            gmr({
+              method: 'GET', url, headers: headers || undefined,
+              onload: (r) => {
+                if (r.status >= 200 && r.status < 300) {
+                  try { finish(resolve, JSON.parse(r.responseText)); } catch (_) { finish(reject, new Error('返回内容不是 JSON')); }
+                } else finish(reject, new Error('HTTP ' + r.status));
+              },
+              onerror: () => finish(reject, new Error('网络请求失败')),
+              ontimeout: () => finish(reject, new Error('请求超时')),
+            });
+          } catch (_) {
+            finish(reject, new Error('发起请求失败'));
+          }
+          return;
+        }
+        const ctrl = (typeof AbortController === 'function') ? new AbortController() : null;
+        fetch(url, ctrl ? { signal: ctrl.signal, headers: headers || undefined } : { headers: headers || undefined }).then((r) => {
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          return r.json();
+        }).then((j) => finish(resolve, j)).catch((e) => finish(reject, e));
+      });
+    },
+    search(q) {
+      this._q = q || '';
+      if (!q) { this.renderHint('输入关键词搜索表情'); return; }
+      if (!this.configured()) { this.renderHint('还没配置搜索表情服务', true); return; }
+      const pane = this.ensurePane();
+      if (!pane) return;
+      pane.textContent = '';
+      pane.appendChild(h('div', { class: 'yhx-es-hint', text: '搜索中…' }));
+      this._urls = [];
+      this._total = null;
+      const c = this.cfg();
+      const seq = ++this._seq;
+      const url = this.buildUrl(c.api, q, c.key, 0);
+      this.request(url, this.authHeaders(c.api, c.key)).then((j) => {
+        if (seq !== this._seq) return;
+        const urls = this.parseAny(j);
+        this._total = (j && typeof j.total === 'number') ? j.total : null;
+        if (!urls.length) { this.renderHint('没搜到结果，换个关键词试试'); return; }
+        this._urls = urls;
+        this.renderResults();
+      }).catch((err) => {
+        if (seq !== this._seq) return;
+        const msg = (err && err.message) ? err.message : String(err || '未知错误');
+        this.renderHint('连接表情服务失败：' + msg.slice(0, 50) + '。请检查网络、API Key 或服务商可用性。', false);
+      });
+    },
+    hasMore() {
+      if (this._total !== null) return this._urls.length < this._total;
+      return this._urls.length > 0 && this._urls.length % this.PAGE_SIZE === 0;
+    },
+    loadMore() {
+      if (this._loadingMore || !this._q || !this.configured()) return;
+      this._loadingMore = true;
+      const pane = this.ensurePane();
+      const btn = pane ? pane.querySelector('.yhx-es-more') : null;
+      if (btn) btn.textContent = '加载中…';
+      const c = this.cfg();
+      const seq = this._seq;
+      const url = this.buildUrl(c.api, this._q, c.key, this._urls.length);
+      this.request(url, this.authHeaders(c.api, c.key)).then((j) => {
+        this._loadingMore = false;
+        if (seq !== this._seq) return;
+        const urls = this.parseAny(j);
+        if (j && typeof j.total === 'number') this._total = j.total;
+        const seen = new Set(this._urls);
+        const fresh = urls.filter((u) => !seen.has(u));
+        this._urls = this._urls.concat(fresh);
+        this.renderResults();
+        if (!fresh.length && btn) btn.textContent = '没有更多了';
+        else if (!this.hasMore() && btn) btn.textContent = '没有更多了';
+      }).catch((err) => {
+        this._loadingMore = false;
+        if (seq !== this._seq) return;
+        const msg = (err && err.message) ? err.message : String(err || '未知错误');
+        if (btn) btn.textContent = '加载失败，点此重试（' + msg.slice(0, 20) + '）';
+      });
+    },
+    insert(url) {
+      const ta = document.querySelector('textarea.retextarea')
+        || document.querySelector('.ubb-box textarea')
+        || document.querySelector('form[action*="book_re"] textarea');
+      if (!ta) { UI.toast('没找到回帖输入框', 'error'); return; }
+      const text = '[img]' + url + '[/img]';
+      try { ta.focus(); } catch (_) {}
+      const pos = (typeof ta.selectionStart === 'number') ? ta.selectionStart : ta.value.length;
+      const end = (typeof ta.selectionEnd === 'number') ? ta.selectionEnd : pos;
+      ta.value = ta.value.slice(0, pos) + text + ta.value.slice(end);
+      try { ta.setSelectionRange(pos + text.length, pos + text.length); } catch (_) {}
+      try {
+        const g = Registry.map.get('ubbPreview');
+        if (g && g.render && g._inst && g._inst.get(ta)) g.render(ta, false);
+      } catch (_) {}
+      try { ta.dispatchEvent(new Event('input', { bubbles: true })); } catch (_) {}
+      UI.toast('已插入表情', 'ok');
+    },
+    openPanel() {
+      const cur = this.cfg();
+      const nameInput = h('input', { class: 'yhx-editinput', type: 'text', placeholder: '服务商名称（如：MemeCub）', value: cur.name || this.RECOMMEND.name });
+      const apiInput = h('input', { class: 'yhx-editinput', type: 'text', placeholder: 'API 地址，可用 {q} 和 {key} 占位符', value: cur.api || this.RECOMMEND.api });
+      const keyInput = h('input', { class: 'yhx-editinput', type: 'text', placeholder: 'API Key（可选，没有就留空）', value: cur.key });
+      const close = () => {
+        mask.classList.remove('is-open');
+        setTimeout(() => mask.remove(), 260);
+      };
+      const sheet = h('div', { class: 'yhx-sheet yhx-editdlg', role: 'dialog', 'aria-modal': 'true' },
+        h('div', { class: 'yhx-hd' },
+          h('div', { class: 'yhx-hd-title', html: ICON.search + '<span>搜索表情设置</span>' }),
+          h('div', { class: 'yhx-grow' }),
+          h('button', { class: 'yhx-iconbtn', type: 'button', 'aria-label': '关闭', html: ICON.close, onclick: () => close() }),
+        ),
+        h('div', { class: 'yhx-editbody' },
+          h('label', { class: 'yhx-field-row' }, h('span', { class: 'yhx-field-label', text: '名称' }), nameInput),
+          h('label', { class: 'yhx-field-row' }, h('span', { class: 'yhx-field-label', text: 'API 地址' }), apiInput),
+          h('label', { class: 'yhx-field-row' }, h('span', { class: 'yhx-field-label', text: 'API Key' }), keyInput),
+          h('div', { class: 'yhx-es-hint', html: '推荐服务商：<b>https://memecub.com</b><br>API 地址里用 <b>{q}</b> 表示关键词。' }),
+          h('div', { class: 'yhx-editft' },
+            h('button', {
+              class: 'yhx-btn', type: 'button', text: '推荐配置',
+              onclick: () => {
+                nameInput.value = this.RECOMMEND.name;
+                apiInput.value = this.RECOMMEND.api;
+                UI.toast('已填入推荐配置，记得填 API Key', 'ok');
+                keyInput.focus();
+              },
+            }),
+            h('button', {
+              class: 'yhx-btn', type: 'button', text: '清除配置',
+              onclick: () => { Store.del('emojiSearchCfg'); UI.toast('已清除配置', 'ok'); close(); },
+            }),
+            h('button', {
+              class: 'yhx-btn primary', type: 'button', text: '保存',
+              onclick: () => {
+                const name = nameInput.value.trim();
+                const api = apiInput.value.trim();
+                const key = keyInput.value.trim();
+                if (!name) { UI.toast('请填写服务商名称', 'error'); nameInput.focus(); return; }
+                if (!/^https?:\/\//i.test(api)) { UI.toast('API 地址要以 http(s):// 开头', 'error'); apiInput.focus(); return; }
+                Store.set('emojiSearchCfg', { name, api, key });
+                UI.toast('已保存，可以搜索表情了', 'ok');
+                close();
+              },
+            }),
+          ),
+        ),
+      );
+      const mask = h('div', { class: 'yhx-mask', hidden: 'hidden' }, sheet);
+      mask.addEventListener('click', (e) => { if (e.target === mask) close(); });
+      UI.root.appendChild(mask);
+      mask.hidden = false;
+      requestAnimationFrame(() => mask.classList.add('is-open'));
+      return { close };
+    },
+  };
+  Registry.register(emojiSearch);
   Registry.register(ubbPreview);
   Registry.register(customEmoji);
   const IN_FRAME = (() => { try { return window.top !== window.self; } catch (_) { return false; } })();
